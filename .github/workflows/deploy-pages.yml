@@ -32,10 +32,33 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Prepare project folders
+            - name: Prepare project folders
         run: |
-          mkdir -p src public/models public/icons
+          mkdir -p src public/models public/icons tools
 
+          if [ -f main.js ]; then
+            mv main.js src/main.js
+          fi
+
+          if [ -f style.css ]; then
+            mv style.css src/style.css
+          fi
+
+          if [ -f favicon.svg ]; then
+            mv favicon.svg public/favicon.svg
+          fi
+
+          if [ -f icon-192.svg ]; then
+            mv icon-192.svg public/icon-192.svg
+          fi
+
+          if [ -f icon-512.svg ]; then
+            mv icon-512.svg public/icon-512.svg
+          fi
+
+          if [ -f prepare_models.py ]; then
+            mv prepare_models.py tools/prepare_models.py
+          fi
           if [ -f main.js ]; then
             mv main.js src/main.js
           fi
