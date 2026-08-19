@@ -1,0 +1,4 @@
+transformers<5
+optimum[onnxruntime]
+huggingface_hub
+sentencepiece
