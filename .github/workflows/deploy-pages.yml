@@ -1,0 +1,57 @@
+name: Build and deploy Offline translator
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Prepare project folders
+        run: |
+          mkdir -p src public/models public/icons
+
+          [ -f main.js ] && mv main.js src/main.js || true
+          [ -f style.css ] && mv style.css src/style.css || true
+
+          [ -f favicon.svg ] && mv favicon.svg public/favicon.svg || true
+          [ -f icon-192.svg ] && mv icon-192.svg public/icon-192.svg || true
+          [ -f icon-512.svg ] && mv icon-512.svg public/icon-512.svg || true
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+      - name: Deploy
+        uses: actions/deploy-pages@v4
