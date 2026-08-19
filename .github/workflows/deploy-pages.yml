@@ -22,36 +22,71 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
-          cache: npm
+          node-version: 24
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
       - name: Prepare project folders
         run: |
           mkdir -p src public/models public/icons
 
-          [ -f main.js ] && mv main.js src/main.js || true
-          [ -f style.css ] && mv style.css src/style.css || true
+          if [ -f main.js ]; then
+            mv main.js src/main.js
+          fi
 
-          [ -f favicon.svg ] && mv favicon.svg public/favicon.svg || true
-          [ -f icon-192.svg ] && mv icon-192.svg public/icon-192.svg || true
-          [ -f icon-512.svg ] && mv icon-512.svg public/icon-512.svg || true
+          if [ -f style.css ]; then
+            mv style.css src/style.css
+          fi
 
-      - name: Install dependencies
+          if [ -f favicon.svg ]; then
+            mv favicon.svg public/favicon.svg
+          fi
+
+          if [ -f icon-192.svg ]; then
+            mv icon-192.svg public/icon-192.svg
+          fi
+
+          if [ -f icon-512.svg ]; then
+            mv icon-512.svg public/icon-512.svg
+          fi
+
+      - name: Install Python tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install "transformers<5" "optimum[onnxruntime]" huggingface_hub sentencepiece
+
+      - name: Install JavaScript dependencies
         run: npm install
 
-      - name: Build
+      - name: Convert Helsinki-NLP models to ONNX
+        run: python tools/prepare_models.py
+
+      - name: Build site
         run: npm run build
 
-      - name: Setup Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
-      - name: Deploy
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
