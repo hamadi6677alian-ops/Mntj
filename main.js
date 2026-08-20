@@ -4,7 +4,7 @@ import { pipeline, env } from '@huggingface/transformers';
 // Runtime policy: models must come from this site's /models directory.
 env.allowRemoteModels = false;
 env.allowLocalModels = true;
-env.localModelPath = '/models/';
+env.localModelPath = './models/';
 env.useBrowserCache = true;
 env.useWasmCache = true;
 
@@ -103,12 +103,12 @@ async function loadTranslator() {
   $('progress').style.width = '8%';
 
   try {
-    state.translator = await pipeline('translation', `/models/${model}`, {
+    state.translator = await pipeline('translation', `./models/${model}`, {
       device: 'wasm',
       progress_callback: (p) => {
         if (typeof p?.progress === 'number') {
           const pct = Math.max(8, Math.min(88, Math.round(p.progress * 80)));
-          $('progress').style.width = `${pct}%`;
+          \( ('progress').style.width = ` \){pct}%`;
         }
       },
     });
@@ -153,7 +153,7 @@ async function translate() {
         return_full_text: false,
       });
       results.push(result?.[0]?.translation_text ?? '');
-      $('progress').style.width = `${20 + Math.round(((i + 1) / parts.length) * 80)}%`;
+      \( ('progress').style.width = ` \){20 + Math.round(((i + 1) / parts.length) * 80)}%`;
     }
     $('output').textContent = results.join('\n\n');
     $('status').textContent = 'تمت الترجمة محليًا. يمكنك الآن فصل الإنترنت.';
@@ -194,13 +194,13 @@ $('copyBtn').onclick = async () => {
 
 $('translateBtn').onclick = translate;
 $('input').addEventListener('input', () => {
-  $('count').textContent = `${$('input').value.length.toLocaleString('ar')} حرف`;
+  \( ('count').textContent = ` \){$('input').value.length.toLocaleString('ar')} حرف`;
 });
 $('settingsBtn').onclick = () => $('settingsDialog').showModal();
 $('closeSettings').onclick = () => $('settingsDialog').close();
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(console.error));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
 }
 
 renderDirection();
