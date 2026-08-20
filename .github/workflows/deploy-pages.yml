@@ -27,53 +27,12 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          
+          cache: npm
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Prepare project folders
-        run: |
-          mkdir -p src public/models public/icons tools
-
-          if [ -f main.js ]; then
-            mv main.js src/main.js
-          fi
-
-          if [ -f style.css ]; then
-            mv style.css src/style.css
-          fi
-
-          if [ -f favicon.svg ]; then
-            mv favicon.svg public/favicon.svg
-          fi
-
-          if [ -f icon-192.svg ]; then
-            mv icon-192.svg public/icons/icon-192.svg
-          fi
-
-          if [ -f icon-512.svg ]; then
-            mv icon-512.svg public/icons/icon-512.svg
-          fi
-
-          if [ -f prepare_models.py ]; then
-            mv prepare_models.py tools/prepare_models.py
-          fi
-
-      - name: Install Python tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install "transformers<5" "optimum[onnxruntime]" huggingface_hub sentencepiece
-
-      - name: Install JavaScript dependencies
-        run: npm ci || npm install
-
-      - name: Convert Helsinki-NLP models to ONNX
-        run: python tools/prepare_models.py
-
-      - name: Build site
+      - name: Build
         run: npm run build
 
       - name: Configure GitHub Pages
