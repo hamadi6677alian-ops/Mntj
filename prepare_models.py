@@ -9,7 +9,6 @@ from transformers import AutoTokenizer
 
 ROOT = Path(__file__).resolve().parents[1]
 MODELS = ROOT / "public" / "models"
-
 MODELS.mkdir(parents=True, exist_ok=True)
 
 
@@ -27,16 +26,14 @@ def prepare_model(model_id: str, model_name: str):
 
     print(f"\n===== Preparing {model_id} =====", flush=True)
 
-    # تنزيل tokenizer/config من النموذج الأصلي.
+    # تنزيل tokenizer والإعدادات
     tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+    # احفظ الصيغة العادية فقط.
+    # لا تستخدم legacy_format=False مع MarianTokenizer البطيء.
     tokenizer.save_pretrained(out_dir)
 
-    # التأكد من وجود tokenizer.json.
-    tokenizer_json = out_dir / "tokenizer.json"
-    if not tokenizer_json.exists():
-        tokenizer.save_pretrained(out_dir, legacy_format=False)
-
-    # ملفات الإعداد الإضافية.
+    # تنزيل الملفات المطلوبة من النموذج الأصلي
     cache_dir = Path(
         snapshot_download(
             model_id,
@@ -66,22 +63,21 @@ def prepare_model(model_id: str, model_name: str):
 
         if source.exists():
             shutil.copy2(source, destination)
+            print(f"copied {filename}", flush=True)
 
-    # تحويل Marian encoder-decoder إلى ONNX.
-    run(
-        [
-            sys.executable,
-            "-m",
-            "optimum.exporters.onnx",
-            "--model",
-            model_id,
-            "--task",
-            "text2text-generation-with-past",
-            str(onnx_dir),
-        ]
-    )
+    # تحويل النموذج إلى ONNX
+    run([
+        sys.executable,
+        "-m",
+        "optimum.exporters.onnx",
+        "--model",
+        model_id,
+        "--task",
+        "text2text-generation-with-past",
+        str(onnx_dir),
+    ])
 
-    print(f"Finished: {model_id}", flush=True)
+    print(f"Finished {model_id}", flush=True)
 
 
 prepare_model(
@@ -94,4 +90,4 @@ prepare_model(
     "fr-ar",
 )
 
-print("\nDone. Models are in public/models/", flush=True)
+print("\nDone. Models are ready inside public/models/", flush=True)
